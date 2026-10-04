@@ -291,3 +291,25 @@ footer a:hover { color: var(--accent); }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ---------- news page ---------- */
+.story { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: var(--s4); padding: var(--s5) 0; border-bottom: 1px solid var(--line); }
+.story-meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; line-height: 1.8; }
+.story-meta .cat { color: var(--accent); display: block; }
+.story h3 { font-size: clamp(22px, 2.6vw, 28px); letter-spacing: -.025em; line-height: 1.2; margin-bottom: var(--s2); }
+.story p { color: var(--muted); max-width: 64ch; }
+.story .src { font: 13px var(--font-mono); color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease); }
+.story .src:hover { color: var(--accent); border-color: var(--accent); }
+.take {
+  margin-top: var(--s3); padding: var(--s2) var(--s3); max-width: 64ch;
+  border: 1px dashed var(--line); border-radius: var(--r-md);
+  font-size: 15px; color: var(--muted);
+}
+.take b { font: 500 11px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+.take.filled { border-style: solid; border-color: rgba(200, 255, 77, .35); background: var(--accent-soft); color: var(--ink); }
+.chip-link { color: var(--ink); text-decoration: none; border-style: solid; transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease); min-height: 44px; display: inline-flex; align-items: center; }
+.chip-link:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 860px) {
+  .story { grid-template-columns: 1fr; gap: var(--s2); padding: var(--s4) 0; }
+  .story-meta .cat { display: inline; margin-right: 10px; }
+}
