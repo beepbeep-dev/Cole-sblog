@@ -1,16 +1,16 @@
 ---
-title: Hold bytes on a cork screw.
+title: Hold bits on a cork screw.
 date: 2026-10-04
 tag: cd
 layout: post
 ---
-Hello! Today I'll show you how to make the CD. This version works, but it's a bit buggy and only holds 8 bytes.
+Hello! Today I'll show you how to make the CD. This version works, but it's a bit buggy and only holds 8 bits.
 
 What you'll need: an Arduino for reading the data, 9 jumper wires, a cork, aluminum foil tape, and a pen or pencil dark enough to read clearly.
 
-First, with a pen or a good pencil, clearly write 12345678. These will be our bytes. Make sure they're evenly spaced.
+First, with a pen or a good pencil, clearly write 12345678. These will be our bits. Make sure they're evenly spaced.
 
-Second, add a dot under each byte.
+Second, add a dot under each bit.
 
 Now remember the aluminum foil you got? Take a small piece about the size of the cork and tape it on firmly. This aluminum foil is the 1. Make sure it's really tight, or it will read wrong.
 
