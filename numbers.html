@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Important numbers in coding — Cole</title>
+  <meta name="description" content="The numbers every programmer runs into: integer limits, powers of two, floating point, time, and the web.">
+  <meta name="theme-color" content="#0A0A0A">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0A0A'/%3E%3Crect x='9' y='8' width='14' height='16' rx='3' fill='%23C8FF4D'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="logo" href="./">cole<span class="caret" aria-hidden="true"></span></a>
+      <ul>
+        <li><a class="link" href="./">About</a></li>
+        <li><a class="link" href="numbers.html" aria-current="page">Numbers</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <div class="wrap">
+        <p class="eyebrow reveal"><span class="dot"></span>Post 001 &middot; Reference</p>
+        <h1 data-scramble>Numbers every coder runs into.</h1>
+        <p class="lede reveal" data-delay="1">Some numbers show up in programming over and over. They aren't random: <strong>almost all of them are powers of two</strong>, minus one. Switch the base to see why.</p>
+        <div class="base-switch reveal" data-delay="2" role="group" aria-label="Number base">
+          <button type="button" data-base="dec" aria-pressed="true">DEC</button>
+          <button type="button" data-base="hex" aria-pressed="false">HEX</button>
+          <button type="button" data-base="bin" aria-pressed="false">BIN</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Powers of two -->
+    <section class="rule">
+      <div class="wrap">
+        <div class="group-head reveal">
+          <h2>Powers of two</h2>
+          <span class="eyebrow" style="margin:0">computers count in binary</span>
+        </div>
+        <div class="rows">
+          <div class="row reveal">
+            <div class="num" data-int="8">8</div>
+            <div><h3>Bits in a byte</h3><p>The basic unit of memory. One byte can hold 2<sup>8</sup> = 256 different values.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="128">128</div>
+            <div><h3>2<sup>7</sup>, written <code>10000000</code></h3><p>A 1 followed by seven 0s in binary. It's the highest bit of a byte, and there are exactly 128 characters in ASCII (0&ndash;127).</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="255">255</div>
+            <div><h3>Biggest value in one byte</h3><p>Eight 1s: <code>11111111</code> = <code>0xFF</code>. It's why RGB colors go from 0 to 255 and why <code>#FFFFFF</code> is white.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="1024">1,024</div>
+            <div><h3>One kibibyte (KiB)</h3><p>2<sup>10</sup>. Close enough to 1,000 that people call it a &ldquo;kilobyte,&rdquo; which is why your 1&nbsp;TB drive shows up as about 931&nbsp;GB.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="65535">65,535</div>
+            <div><h3>Max unsigned 16-bit integer</h3><p>2<sup>16</sup> &minus; 1. It's also the highest network port number, because ports are stored in 16 bits.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 32-bit band (signature) -->
+    <section class="band">
+      <div class="wrap">
+        <div class="reveal">
+          <p class="eyebrow">Try it &middot; click any bit</p>
+          <h2>The 32-bit integer limit</h2>
+          <p class="muted prose">A signed 32-bit integer uses its first bit (outlined in red) for the sign. That leaves 31 bits for the value, so the max is <strong style="color:var(--ink)">2<sup>31</sup> &minus; 1 = 2,147,483,647</strong>. Add 1 and it <em>overflows</em> around to &minus;2,147,483,648. Without a sign bit (unsigned), all 32 bits count, so the max is <strong style="color:var(--ink)">4,294,967,295</strong>.</p>
+        </div>
+        <div class="bits reveal" id="bits" data-delay="1"></div>
+        <div class="bits-legend reveal" data-delay="1" aria-hidden="true"><span>bit 31 &middot; sign</span><span>bit 0</span></div>
+        <div class="split reveal" data-delay="2" style="margin-top:var(--s5); gap:var(--s4)">
+          <div>
+            <p class="eyebrow">Signed (int32)</p>
+            <p class="band-readout" id="signed" aria-live="polite">2,147,483,647</p>
+          </div>
+          <div>
+            <p class="eyebrow">Unsigned (uint32)</p>
+            <p class="band-readout muted" id="unsigned" aria-live="polite">2,147,483,647</p>
+          </div>
+        </div>
+        <div class="band-controls reveal" data-delay="3">
+          <button class="btn" type="button" data-preset="max">INT_MAX</button>
+          <button class="btn" type="button" data-preset="inc">+1</button>
+          <button class="btn" type="button" data-preset="min">INT_MIN</button>
+          <button class="btn" type="button" data-preset="neg1">&minus;1</button>
+          <button class="btn" type="button" data-preset="zero">0</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Integer limits -->
+    <section>
+      <div class="wrap">
+        <div class="group-head reveal">
+          <h2>Integer limits</h2>
+          <span class="eyebrow" style="margin:0">where numbers overflow</span>
+        </div>
+        <div class="rows">
+          <div class="row reveal">
+            <div class="num" data-int="127">127</div>
+            <div><h3>Max signed 8-bit integer</h3><p>The range of a signed byte is &minus;128 to 127. Fun fact: <code>127.0.0.1</code> is &ldquo;localhost,&rdquo; your own computer.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="2147483647">2,147,483,647</div>
+            <div><h3>Max signed 32-bit integer</h3><p>2<sup>31</sup> &minus; 1, also called <code>INT_MAX</code>. This is the number that broke YouTube's view counter when &ldquo;Gangnam Style&rdquo; passed it in 2014.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="-2147483648">&minus;2,147,483,648</div>
+            <div><h3>Min signed 32-bit integer</h3><p>One further from zero than the max, because zero takes up one of the &ldquo;positive&rdquo; slots.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="4294967295">4,294,967,295</div>
+            <div><h3>Max unsigned 32-bit integer</h3><p>2<sup>32</sup> &minus; 1. It's also why 32-bit programs can only use about 4&nbsp;GB of memory, and why there are only ~4.3 billion IPv4 addresses.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="9223372036854775807">9,223,372,036,854,775,807</div>
+            <div><h3>Max signed 64-bit integer</h3><p>2<sup>63</sup> &minus; 1. About 9.2 quintillion. That's <code>long</code> in Java and <code>i64</code> in Rust. You'll basically never overflow it by counting.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="9007199254740991">9,007,199,254,740,991</div>
+            <div><h3>JavaScript's max safe integer</h3><p>2<sup>53</sup> &minus; 1, or <code>Number.MAX_SAFE_INTEGER</code>. Above this, JS numbers lose precision: <code>2**53 + 1 === 2**53</code> is <code>true</code>.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Floating point & text -->
+    <section class="rule">
+      <div class="wrap">
+        <div class="group-head reveal">
+          <h2>Floats &amp; text</h2>
+          <span class="eyebrow" style="margin:0">numbers that look wrong</span>
+        </div>
+        <div class="rows">
+          <div class="row reveal">
+            <div class="num">0.30000000000000004</div>
+            <div><h3>0.1 + 0.2</h3><p>Computers store decimals in binary, and 0.1 can't be written exactly in binary (like 1/3 in decimal). That's why you never compare money with floats.</p><span class="tag">not an integer &middot; base switch skips it</span></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="65">65</div>
+            <div><h3>The letter &ldquo;A&rdquo;</h3><p>In ASCII, <code>A</code> is 65 and <code>a</code> is 97. They're exactly 32 apart, so flipping one bit changes the case.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="1114111">1,114,111</div>
+            <div><h3>Highest Unicode code point</h3><p><code>U+10FFFF</code>. Every character, emoji, and symbol in Unicode fits below this number.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Time & web -->
+    <section class="rule">
+      <div class="wrap">
+        <div class="group-head reveal">
+          <h2>Time &amp; the web</h2>
+          <span class="eyebrow" style="margin:0">numbers you'll see every day</span>
+        </div>
+        <div class="rows">
+          <div class="row reveal">
+            <div class="num">1970-01-01</div>
+            <div><h3>The Unix epoch</h3><p>Most computers count time as seconds since midnight UTC on January 1, 1970. Right now that number is about <span class="mono" id="epoch">1.7 billion</span>.</p><span class="tag">a date &middot; base switch skips it</span></div>
+          </div>
+          <div class="row reveal">
+            <div class="num">2038-01-19</div>
+            <div><h3>The Year 2038 problem</h3><p>At 03:14:07 UTC that day, Unix time hits 2,147,483,647 seconds &mdash; the 32-bit limit. Systems that still store time as a signed 32-bit integer will roll over to 1901.</p><span class="tag">a date &middot; base switch skips it</span></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="404">404</div>
+            <div><h3>Not Found</h3><p>The most famous HTTP status code. <code>200</code> means OK, <code>301</code> means moved, <code>500</code> means the server broke.</p></div>
+          </div>
+          <div class="row reveal">
+            <div class="num" data-int="443">443</div>
+            <div><h3>The HTTPS port</h3><p>Secure websites (like this one) talk on port 443. Plain HTTP uses port 80, and SSH uses 22.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>&copy; <span data-year>2026</span> Cole</span>
+      <a href="./">&larr; Back to About</a>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+  <script src="assets/game.js"></script>
+  <script>
+    (function () {
+      var el = document.getElementById("epoch");
+      if (!el) return;
+      function tick() { el.textContent = Math.floor(Date.now() / 1000).toLocaleString("en-US"); }
+      tick();
+      setInterval(tick, 1000);
+    })();
+  </script>
+</body>
+</html>

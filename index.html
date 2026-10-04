@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cole — coleiscool.com</title>
+  <meta name="description" content="Cole's blog. Code, experiments, and the numbers every programmer should know.">
+  <meta name="theme-color" content="#0A0A0A">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0A0A'/%3E%3Crect x='9' y='8' width='14' height='16' rx='3' fill='%23C8FF4D'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="logo" href="./">cole<span class="caret" aria-hidden="true"></span></a>
+      <ul>
+        <li><a class="link" href="./" aria-current="page">About</a></li>
+        <li><a class="link" href="numbers.html">Numbers</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <div class="wrap">
+        <p class="eyebrow reveal"><span class="dot"></span>coleiscool.com</p>
+        <h1 data-scramble>Hi, I'm Cole.</h1>
+        <p class="lede reveal" data-delay="1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor <strong>incididunt ut labore</strong>.</p>
+      </div>
+    </header>
+
+    <section class="rule">
+      <div class="wrap split">
+        <div class="prose reveal">
+          <p class="eyebrow">About me</p>
+          <h2>Lorem ipsum dolor sit amet.</h2>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. <strong>Excepteur sint occaecat</strong> cupidatat non proident.</p>
+        </div>
+        <div class="term reveal" data-delay="2" role="img" aria-label="Terminal showing: name Cole, GitHub beepbeep-dev, site coleiscool.com, currently building this blog">
+          <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="term-body" aria-hidden="true">
+            <div class="line"><span class="prompt">$</span> whoami --verbose</div>
+            <div class="line"><span class="k">name</span> <span data-scramble-on-view>Cole</span></div>
+            <div class="line"><span class="k">github</span> <span data-scramble-on-view>beepbeep-dev</span></div>
+            <div class="line"><span class="k">site</span> <span data-scramble-on-view>coleiscool.com</span></div>
+            <div class="line"><span class="k">building</span> <span data-scramble-on-view>this blog</span></div>
+            <div class="line"><span class="k">status</span> <span class="accent">&#9679; online</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rule">
+      <div class="wrap">
+        <p class="eyebrow reveal">Read next</p>
+        <a class="feature reveal" href="numbers.html">
+          <div>
+            <p class="big" data-scramble-on-view>2,147,483,647</p>
+            <h3>Important numbers in coding</h3>
+            <p class="muted" style="margin:0">Integer limits, powers of two, and the floating-point weirdness that every programmer bumps into eventually.</p>
+          </div>
+          <span class="arrow" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </a>
+        <div class="soon reveal" data-delay="1">
+          <span class="chip">more posts compiling&hellip;</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>&copy; <span data-year>2026</span> Cole</span>
+      <a href="https://github.com/beepbeep-dev">github.com/beepbeep-dev</a>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+  <script src="assets/game.js"></script>
+</body>
+</html>
