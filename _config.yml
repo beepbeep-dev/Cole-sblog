@@ -4,6 +4,9 @@ markdown: kramdown
 kramdown:
   input: GFM
 permalink: /posts/:year/:month/:day/:title/
+collections:
+  media:
+    output: false
 exclude:
   - README.md
 defaults:

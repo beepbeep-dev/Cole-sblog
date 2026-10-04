@@ -1,0 +1,73 @@
+---
+layout: default
+title: Media
+permalink: /media.html
+description: Photos and videos of what Cole is building, printing and breaking.
+---
+    <header class="hero">
+      <div class="wrap">
+        <p class="eyebrow reveal"><span class="dot"></span>Media</p>
+        <h1 data-scramble>Proof it works.</h1>
+        <p class="lede reveal" data-delay="1">Photos and videos of my builds, prints and experiments.</p>
+      </div>
+    </header>
+
+    <section class="rule">
+      <div class="wrap">
+{% assign items = site.media | sort: "date" | reverse %}
+{% if items.size == 0 %}
+        <p class="muted feed-note">Nothing here yet. Photos and videos are on the way.</p>
+{% else %}
+        <div class="gallery">
+{% for m in items %}
+  {% assign ext = m.file | split: "." | last | downcase %}
+  {% if ext == "mp4" or ext == "mov" or ext == "webm" or ext == "m4v" %}{% assign kind = "video" %}{% else %}{% assign kind = "image" %}{% endif %}
+          <figure class="tile reveal">
+            <button class="tile-open" type="button" data-kind="{{ kind }}" data-src="{{ m.file | relative_url }}" data-title="{{ m.title | escape }}" data-caption="{{ m.caption | escape }}" aria-label="Open {{ m.title | escape }}">
+{% if kind == "video" %}
+              <video src="{{ m.file | relative_url }}#t=0.1" muted playsinline preload="metadata"></video>
+              <span class="play" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+{% else %}
+              <img src="{{ m.file | relative_url }}" alt="{{ m.title | escape }}" loading="lazy" decoding="async">
+{% endif %}
+            </button>
+            <figcaption>
+              <span class="tile-title">{{ m.title | escape }}</span>
+              <span class="tile-meta">{% if m.tag %}{{ m.tag | escape }} &middot; {% endif %}{{ m.date | date: "%b %-d, %Y" }}</span>
+            </figcaption>
+          </figure>
+{% endfor %}
+        </div>
+{% endif %}
+      </div>
+    </section>
+
+    <dialog class="lightbox" id="lightbox" aria-label="Media viewer">
+      <button class="lb-close" type="button" aria-label="Close">&times;</button>
+      <div class="lb-stage"></div>
+      <p class="lb-caption"><b></b><span></span></p>
+    </dialog>
+    <script>
+      (function () {
+        var dlg = document.getElementById("lightbox");
+        if (!dlg || !dlg.showModal) return;
+        var stage = dlg.querySelector(".lb-stage");
+        function close() { dlg.close(); }
+        dlg.addEventListener("close", function () { stage.innerHTML = ""; });
+        dlg.querySelector(".lb-close").addEventListener("click", close);
+        dlg.addEventListener("click", function (e) { if (e.target === dlg) close(); });
+        document.querySelectorAll(".tile-open").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var el = document.createElement(btn.dataset.kind === "video" ? "video" : "img");
+            el.src = btn.dataset.src;
+            if (btn.dataset.kind === "video") { el.controls = true; el.autoplay = true; el.playsInline = true; }
+            else el.alt = btn.dataset.title;
+            stage.innerHTML = "";
+            stage.appendChild(el);
+            dlg.querySelector(".lb-caption b").textContent = btn.dataset.title;
+            dlg.querySelector(".lb-caption span").textContent = btn.dataset.caption ? " \u2014 " + btn.dataset.caption : "";
+            dlg.showModal();
+          });
+        });
+      })();
+    </script>

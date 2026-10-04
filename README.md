@@ -13,6 +13,8 @@ Cole's blog, hosted on GitHub Pages. The main pages are plain HTML, CSS and Java
 | `posts.html` | List of all posts |
 | `_posts/` | One Markdown file per post (written with Pages CMS) |
 | `_layouts/` | Page templates for posts |
+| `media.html` | Photo and video gallery |
+| `_media/` | One file per gallery item (added with Pages CMS) |
 | `.pages.yml` | Pages CMS settings |
 | `CNAME` | Custom domain for GitHub Pages |
 
@@ -21,3 +23,7 @@ Cole's blog, hosted on GitHub Pages. The main pages are plain HTML, CSS and Java
 1. Go to [app.pagescms.org](https://app.pagescms.org) and sign in with GitHub.
 2. Open **Cole-sblog**, then **Posts**, then **Add an entry**.
 3. Fill in the title, date and post, then click **Save**. It shows up on the site in a minute or two.
+
+## Adding photos and videos
+
+In Pages CMS, open **Media**, click **Add an entry**, upload a photo or video, give it a title, and click **Save**.

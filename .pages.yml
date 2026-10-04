@@ -2,7 +2,7 @@
 media:
   input: assets/uploads
   output: /assets/uploads
-  categories: [image]
+  categories: [image, video]
 
 content:
   - name: posts
@@ -37,3 +37,39 @@ content:
       - name: body
         label: Post
         type: rich-text
+
+  - name: media
+    label: Media
+    type: collection
+    path: _media
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      fields: [title, date, tag]
+      primary: title
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: file
+        label: Photo or video
+        type: file
+        required: true
+        description: JPG, PNG, GIF, WebP, MP4 or MOV. Keep videos short (under about 50 MB).
+        options:
+          categories: [image, video]
+          rename: safe
+      - name: caption
+        label: Caption
+        type: text
+      - name: tag
+        label: Tag
+        type: string
+        description: Optional. One short word, like coolguys or prints.
