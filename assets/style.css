@@ -162,7 +162,7 @@ p { margin: 0 0 var(--s2); }
 }
 .base-switch button {
   font: 500 13px var(--font-mono); letter-spacing: .06em; color: var(--muted);
-  background: transparent; border: 0; border-radius: 999px; padding: 0 18px; min-height: 40px; cursor: pointer;
+  background: transparent; border: 0; border-radius: 999px; padding: 0 18px; min-height: 44px; cursor: pointer;
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 .base-switch button:hover { color: var(--ink); }
@@ -247,10 +247,15 @@ footer a:hover { color: var(--accent); }
   display: grid; place-items: center; font: 16px var(--font-mono);
 }
 .fb-toggle:hover { color: var(--accent); background: rgba(255, 255, 255, .05); }
-.fb canvas { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; cursor: pointer; border-top: 1px solid var(--line); touch-action: manipulation; }
+.fb canvas { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; cursor: pointer; border-top: 1px solid var(--line); touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
 .fb canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 0; }
-.fb.closed { width: 172px; }
+.fb.closed { width: auto; border-radius: 999px; cursor: pointer; }
 .fb.closed canvas { display: none; }
+.fb.closed .fb-head { gap: 6px; padding: 0 4px 0 16px; height: 44px; }
+.fb-head > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fb.closed .fb-score { display: none; }
+.fb .fb-play { display: none; color: var(--accent); }
+.fb.closed .fb-play { display: inline; }
 
 @media (max-width: 860px) {
   .split, .row, .feature { grid-template-columns: 1fr; }
@@ -260,10 +265,24 @@ footer a:hover { color: var(--accent); }
   section { padding: var(--s6) 0; }
 }
 @media (max-width: 560px) {
-  .wrap { padding: 0 var(--s2); }
-  .bits { gap: 2px; }
-  .bit { border-radius: 2px; }
-  .fb { right: var(--s2); bottom: var(--s2); width: 220px; }
+  body { font-size: 16px; }
+  .wrap { padding: 0 max(var(--s2), env(safe-area-inset-left)) 0 max(var(--s2), env(safe-area-inset-right)); }
+  .hero { padding: var(--s6) 0 var(--s5); }
+  .hero h1 { margin-bottom: var(--s3); }
+  section { padding: var(--s5) 0; }
+  .term { font-size: 13px; }
+  .term-body { padding: var(--s2) var(--s3); }
+  .row { padding: var(--s3) 0; }
+  .group-head { margin-bottom: var(--s3); }
+  /* 32 bits become two rows of 16 so each cell is tappable */
+  .bits { grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; margin-top: var(--s4); }
+  .bit { aspect-ratio: 1 / 1.35; font-size: 12px; border-radius: 3px; }
+  .bits-legend { display: none; }
+  .band-readout { font-size: clamp(26px, 8.5vw, 40px); }
+  .band-controls .btn { flex: 1 1 auto; }
+  footer { padding-bottom: calc(var(--s7) + env(safe-area-inset-bottom)); }
+  .fb { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: min(320px, calc(100vw - 24px)); }
+  .fb.closed { width: auto; }
   .nav a.link { padding: 0 12px; }
   .nav a.link::after { left: 12px; right: 12px; }
 }

@@ -8,7 +8,7 @@
   root.className = "fb";
   root.setAttribute("aria-label", "Flappy Bit mini game");
   root.innerHTML =
-    '<div class="fb-head"><span><b>flappy_bit</b> &middot; best <span class="fb-best">0</span></span>' +
+    '<div class="fb-head"><span><span class="fb-play">&#9654; </span><b>flappy_bit</b><span class="fb-score"> &middot; best <span class="fb-best">0</span></span></span>' +
     '<button class="fb-toggle" type="button" aria-expanded="true" aria-label="Hide game">&minus;</button></div>' +
     '<canvas tabindex="0" aria-label="Game. Click, tap, or press space to flap."></canvas>';
   document.body.appendChild(root);
@@ -173,7 +173,7 @@
   function start() { if (!raf) { last = 0; raf = requestAnimationFrame(loop); } }
   function stop() { cancelAnimationFrame(raf); raf = 0; }
 
-  canvas.addEventListener("pointerdown", (e) => { e.preventDefault(); canvas.focus({ preventScroll: true }); flap(); });
+  canvas.addEventListener("pointerdown", (e) => { e.preventDefault(); canvas.focus({ preventScroll: true, focusVisible: false }); flap(); });
   canvas.addEventListener("keydown", (e) => {
     if (e.code === "Space" || e.code === "ArrowUp" || e.key === "Enter") { e.preventDefault(); flap(); }
   });
@@ -186,13 +186,16 @@
     try { localStorage.setItem("cole.flappy.open", open ? "1" : "0"); } catch (_) {}
     if (open) start(); else stop();
   }
-  toggle.addEventListener("click", () => setOpen(root.classList.contains("closed")));
+  toggle.addEventListener("click", (e) => { e.stopPropagation(); setOpen(root.classList.contains("closed")); });
+  // when collapsed, the whole pill opens the game
+  root.querySelector(".fb-head").addEventListener("click", () => { if (root.classList.contains("closed")) setOpen(true); });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) stop();
     else if (!root.classList.contains("closed")) start();
   });
 
-  let open = window.innerWidth > 640;
+  // start open only on big screens with a mouse; phones and tablets get the small pill
+  let open = window.innerWidth > 1024 && window.matchMedia("(pointer: fine)").matches;
   try { const s = localStorage.getItem("cole.flappy.open"); if (s !== null) open = s === "1"; } catch (_) {}
   setOpen(open);
   draw();
