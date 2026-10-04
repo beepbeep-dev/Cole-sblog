@@ -5,6 +5,12 @@
   --muted: #9B9B95;
   --accent: #C8FF4D;
   --accent-soft: rgba(200, 255, 77, .10);
+  --blue: #5B8CFF;
+  --purple: #A66BFF;
+  --blue-soft: rgba(91, 140, 255, .14);
+  --purple-soft: rgba(166, 107, 255, .14);
+  --grad: linear-gradient(120deg, #5B8CFF 0%, #A66BFF 55%, #C8FF4D 100%);
+  --grad-bp: linear-gradient(120deg, #5B8CFF, #A66BFF);
   --line: rgba(255, 255, 255, .09);
 
   --font-sans: "Inter Tight", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -43,7 +49,7 @@ body::before {
   mask-image: linear-gradient(to bottom, #000 0%, transparent 70%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 70%);
 }
-::selection { background: var(--accent); color: var(--bg); }
+::selection { background: var(--purple); color: #fff; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
@@ -430,7 +436,7 @@ html.has-field body::before { opacity: 0; }
 
 /* hero headline: letters slide up on load */
 .hero h1 { animation: rise 900ms var(--ease) both; }
-@keyframes rise { from { opacity: 0; transform: translateY(28px); filter: blur(6px); } }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } }
 
 /* tilt + glare */
 .tilt {
@@ -581,4 +587,114 @@ html.has-field body::before { opacity: 0; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   .marquee-track { animation: none; }
   .hero h1 { animation: none; }
+}
+
+
+/* =====================================================================
+   v3: blue + purple, animations that also run on touch screens
+   ===================================================================== */
+@property --spin { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+
+/* drifting aurora behind every hero */
+.aurora { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.aurora i {
+  position: absolute; display: block; border-radius: 50%; will-change: transform;
+  width: min(70vw, 760px); aspect-ratio: 1; animation: drift 22s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(1) { left: 38%; top: -45%; background: radial-gradient(circle, rgba(91, 140, 255, .34), transparent 62%); }
+.aurora i:nth-child(2) { left: 58%; top: -5%; background: radial-gradient(circle, rgba(166, 107, 255, .32), transparent 62%); animation-duration: 26s; animation-delay: -8s; }
+.aurora i:nth-child(3) { left: -12%; top: 10%; width: min(50vw, 520px); background: radial-gradient(circle, rgba(200, 255, 77, .08), transparent 62%); animation-duration: 30s; animation-delay: -14s; }
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-10%, 8%, 0) scale(1.18); }
+  100% { transform: translate3d(8%, -6%, 0) scale(.92); }
+}
+
+/* headline shine: a blue -> purple band sweeps across */
+.hero h1, .article h1 {
+  background: linear-gradient(100deg, var(--ink) 0%, var(--ink) 38%, #8FB0FF 46%, var(--purple) 52%, var(--ink) 60%, var(--ink) 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: rise 900ms var(--ease) both, shine 7s ease-in-out 1.2s infinite;
+}
+@keyframes shine { 0% { background-position: 100% 0; } 55%, 100% { background-position: 0% 0; } }
+
+/* gradient accents */
+.eyebrow .dot { background: var(--grad-bp); box-shadow: 0 0 12px var(--purple); }
+.progress { background: var(--grad); box-shadow: 0 0 14px rgba(166, 107, 255, .7); }
+.cursor-glow { background: radial-gradient(circle, rgba(166, 107, 255, .10) 0%, rgba(91, 140, 255, .05) 35%, transparent 65%); }
+.hero .lede strong, .prose p strong { background: var(--grad-bp); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.marquee i { color: var(--purple); }
+.marquee span:nth-child(4n+1):hover { color: var(--blue); }
+.marquee span:nth-child(4n+3):hover { color: var(--purple); }
+.feature .big { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.feature { background: radial-gradient(120% 140% at 0% 0%, var(--purple-soft), transparent 50%), radial-gradient(100% 120% at 100% 100%, var(--blue-soft), transparent 55%), var(--surface); }
+.feature:hover .arrow { background: var(--grad-bp); color: #fff; border-color: transparent; }
+.chip-link:hover, .btn:hover { border-color: var(--purple); color: var(--ink); }
+.btn::before, .chip-link::before { background: linear-gradient(100deg, transparent, rgba(166, 107, 255, .35), transparent); }
+.row::before { background: var(--grad); }
+.nav a.link::after { background: var(--grad); }
+.post-body a { color: #8FB0FF; }
+.post-body blockquote { border-left-color: var(--purple); }
+.bit.sign { border-color: var(--purple); box-shadow: 0 0 0 1px var(--purple) inset; }
+
+/* spinning gradient border */
+.glow-border { position: relative; isolation: isolate; }
+.glow-border::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 2;
+  background: conic-gradient(from var(--spin), transparent 0deg, transparent 220deg, var(--blue) 270deg, var(--purple) 315deg, var(--accent) 345deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: spin 5s linear infinite; opacity: .9;
+}
+@keyframes spin { to { --spin: 360deg; } }
+.game-tile.glow-border::before, .tile-open.glow-border::before { opacity: 0; transition: opacity 400ms ease; }
+.game-tile.glow-border:hover::before, .tile-open.glow-border:hover::before, .game-tile.glow-border.in-view::before { opacity: .9; }
+
+/* section titles rise word by word */
+.words .w { display: inline-block; opacity: 0; transform: translateY(.55em) rotate(2deg); transition: opacity 600ms var(--ease), transform 700ms var(--ease); transition-delay: calc(var(--i) * 55ms); }
+.words.in .w { opacity: 1; transform: none; }
+
+/* reveals: a touch of blur-free scale for more punch */
+.reveal { transform: translateY(28px) scale(.985); }
+.reveal.in { transform: none; }
+
+/* phone menu: a little aurora behind the links */
+@media (max-width: 760px) {
+  .nav ul { background: radial-gradient(90% 60% at 100% 0%, rgba(166, 107, 255, .20), transparent 60%), radial-gradient(80% 50% at 0% 100%, rgba(91, 140, 255, .18), transparent 60%), rgba(10, 10, 10, .985); }
+  .nav a.link[aria-current="page"] { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+}
+
+/* games in the new palette */
+.gt-snake i { background: var(--purple); } .gt-snake i:nth-child(1) { background: #C08CFF; } .gt-snake i:nth-child(3), .gt-snake i:nth-child(4) { background: var(--blue); }
+.gt-2048 i:nth-child(1) { background: #28325C; } .gt-2048 i:nth-child(2) { background: #3A58B8; } .gt-2048 i:nth-child(3) { background: var(--purple); color: #fff; }
+.gt-break i:nth-child(n+4) { background: var(--purple); opacity: 1; } .gt-break i:nth-child(5) { animation: brick 3s steps(1) infinite; }
+.gt-break i:nth-child(2) { background: var(--blue); }
+.gt-flappy i { background: #1F1A33; border-color: #3A2F66; }
+.arcade-card:focus-within { border-color: rgba(166, 107, 255, .55); }
+.arcade-stats em { color: #B794FF; }
+.arcade-reset:hover { color: var(--purple); border-color: var(--purple); }
+.arcade-card canvas:focus-visible { outline-color: var(--purple); }
+
+/* corner game: a round button on touch-size screens */
+.fb-toggle svg { display: block; }
+@media (max-width: 760px) {
+  .fb.closed { width: 54px; height: 54px; border-radius: 50%; }
+  .fb.closed .fb-head { height: 54px; padding: 0; justify-content: center; }
+  .fb.closed .fb-head > span { display: none; }
+  .fb.closed .fb-toggle { width: 54px; height: 54px; color: var(--ink); }
+}
+.fb.closed { border-color: transparent; }
+.fb.closed.glow-border::before { animation-duration: 3s; }
+.fb:not(.closed).glow-border::before { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora i, .glow-border::before, .hero h1, .article h1 { animation: none !important; }
+  .words .w { opacity: 1; transform: none; }
+}
+.fb.glow-border { position: fixed; }
+.nav { background: rgba(10, 10, 10, .9); }
+@media (max-width: 1000px) and (min-width: 761px) {
+  .game-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

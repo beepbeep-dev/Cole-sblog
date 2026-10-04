@@ -5,7 +5,8 @@
 window.ColeArcade = (() => {
   const C = {
     bg: "#0E0E0E", surface: "#161616", cell: "#1C1C1C", line: "#2A2A2A", edge: "#3A3A3A",
-    accent: "#C8FF4D", ink: "#F2F2EE", muted: "#9B9B95", danger: "#FF6B6B",
+    accent: "#C8FF4D", ink: "#F2F2EE", muted: "#9B9B95", danger: "#FF6B8A",
+    blue: "#5B8CFF", purple: "#A66BFF",
   };
   const FONT = "'JetBrains Mono', ui-monospace, Menlo, monospace";
 
@@ -104,7 +105,7 @@ window.ColeArcade = (() => {
     function draw(ctx) {
       ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
       ctx.font = `9px ${FONT}`; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.fillStyle = "rgba(140,150,255,0.07)";
       const off = (t * 0.4) % 24;
       for (let y = 10, row = 0; y < H; y += 16, row++) {
         for (let x = -off, col = Math.floor(t * 0.4 / 24); x < W; x += 24, col++) {
@@ -112,7 +113,9 @@ window.ColeArcade = (() => {
         }
       }
       for (const p of pipes) {
-        ctx.fillStyle = C.line; ctx.strokeStyle = C.edge;
+        const pg = ctx.createLinearGradient(p.x, 0, p.x + PIPE_W, 0);
+        pg.addColorStop(0, "#241C3F"); pg.addColorStop(1, "#1A2240");
+        ctx.fillStyle = pg; ctx.strokeStyle = "#4A3A80";
         rr(ctx, p.x, -6, PIPE_W, p.top + 6, 4); ctx.fill(); ctx.stroke();
         rr(ctx, p.x, p.top + GAP, PIPE_W, H - p.top - GAP + 6, 4); ctx.fill(); ctx.stroke();
       }
@@ -189,10 +192,13 @@ window.ColeArcade = (() => {
       // snake
       const dead = state === "over" && flash > 0 && (flash | 0) % 6 < 3;
       body.forEach((b, i) => {
-        const a = Math.max(0.25, 1 - i / (body.length + 6));
-        ctx.fillStyle = dead ? C.danger : `rgba(200,255,77,${a})`;
+        const f = body.length > 1 ? i / (body.length - 1) : 0;
+        const a = Math.max(0.35, 1 - i / (body.length + 8));
+        ctx.fillStyle = dead ? C.danger : `rgba(${Math.round(lerp(176, 91, f))},${Math.round(lerp(120, 140, f))},255,${a})`;
+        if (i === 0 && !dead) { ctx.save(); ctx.shadowColor = C.purple; ctx.shadowBlur = 14; }
         rr(ctx, b.x * S + 2, b.y * S + 2, S - 4, S - 4, i === 0 ? 6 : 4);
         ctx.fill();
+        if (i === 0 && !dead) ctx.restore();
       });
       const h = body[0], [dx, dy] = DIRS[dir];
       ctx.fillStyle = "#0A0A0A";
@@ -293,11 +299,13 @@ window.ColeArcade = (() => {
       if (anim.t < 1) anim.t = Math.min(1, anim.t + k / 7);
       else if (anim.p < 1) anim.p = Math.min(1, anim.p + k / 9);
     }
+    // dark blue -> blue -> purple -> lime as the numbers grow
+    const RAMP = ["#22263A", "#28325C", "#2E4485", "#3A58B8", "#5B8CFF", "#7B78FF", "#9466FF", "#A66BFF", "#B98AFF", "#9BE36A", "#C8FF4D"];
     function tileColor(v) {
-      const lvl = Math.log2(v); // 1..11+
-      const f = Math.min(1, (lvl - 1) / 10);
-      const r = Math.round(lerp(0x24, 0xC8, f)), g = Math.round(lerp(0x24, 0xFF, f)), b = Math.round(lerp(0x24, 0x4D, f));
-      return { fill: `rgb(${r},${g},${b})`, ink: f > 0.45 ? "#0A0A0A" : C.ink, sub: f > 0.45 ? "rgba(10,10,10,0.55)" : C.muted, glow: f > 0.7 };
+      const lvl = Math.min(RAMP.length, Math.log2(v)); // 1..11
+      const fill = RAMP[lvl - 1];
+      const dark = lvl >= 10;
+      return { fill, ink: dark ? "#0A0A0A" : C.ink, sub: dark ? "rgba(10,10,10,0.55)" : "rgba(242,242,238,0.6)", glow: lvl >= 5 };
     }
     function drawTile(ctx, v, x, y, scale) {
       const s = CELL * scale, ox = x + (CELL - s) / 2, oy = y + (CELL - s) / 2;
@@ -434,8 +442,7 @@ window.ColeArcade = (() => {
       ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
       for (const b of bricks) {
         if (!b.alive) continue;
-        const a = 1 - b.r * 0.15;
-        ctx.fillStyle = `rgba(200,255,77,${a})`;
+        ctx.fillStyle = ["#C8FF4D", "#8FB0FF", "#5B8CFF", "#A66BFF", "#7E52D9"][b.r];
         rr(ctx, b.x, b.y, BW, BH, 3); ctx.fill();
         text(ctx, b.r % 2 ? "0" : "1", b.x + BW / 2, b.y + BH / 2 + 0.5, { size: 8, weight: 700, color: "rgba(10,10,10,0.5)" });
       }
@@ -562,7 +569,7 @@ window.ColeArcade = (() => {
   function mount(el) {
     const id = el.dataset.game, info = INFO[id];
     if (!games[id]) return;
-    el.classList.add("arcade-card");
+    el.classList.add("arcade-card", "glow-border");
     el.innerHTML =
       `<div class="arcade-head"><b>${info.name}</b>` +
       `<span class="arcade-stats"><span>score <em data-score>0</em></span><span>best <em data-best>0</em></span>` +

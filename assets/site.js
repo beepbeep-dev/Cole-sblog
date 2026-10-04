@@ -27,20 +27,42 @@
   }
   document.querySelectorAll("[data-scramble]").forEach(scramble);
 
+  // ---- section titles rise word by word ----
+  document.querySelectorAll("main section h2, .group-head h2").forEach((h) => {
+    if (h.closest(".post-body") || h.querySelector("*")) return;
+    const words = h.textContent.trim().split(/\s+/);
+    h.setAttribute("aria-label", h.textContent.trim());
+    h.innerHTML = words.map((w, i) => `<span class="w" aria-hidden="true" style="--i:${i}">${w.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))}</span>`).join(" ");
+    h.classList.add("words", "reveal-lite");
+  });
+
   // ---- reveal on scroll ----
-  const revealables = document.querySelectorAll(".reveal");
-  if ("IntersectionObserver" in window && !reduced) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (!e.isIntersecting) return;
-        e.target.classList.add("in");
-        e.target.querySelectorAll("[data-scramble-on-view]").forEach(scramble);
-        io.unobserve(e.target);
-      });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
-    revealables.forEach((el) => io.observe(el));
+  // IntersectionObserver does the normal work; a cheap scroll check backs it up so a fast
+  // fling on a phone never leaves a section stuck invisible.
+  const revealables = [...document.querySelectorAll(".reveal, .reveal-lite")];
+  const show = (el) => {
+    if (el.classList.contains("in")) return;
+    el.classList.add("in");
+    el.querySelectorAll("[data-scramble-on-view]").forEach(scramble);
+  };
+  if (!reduced) {
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } });
+      }, { rootMargin: "0px 0px -6% 0px", threshold: 0.01 });
+      revealables.forEach((el) => io.observe(el));
+    }
+    let pending = false;
+    const sweep = () => {
+      pending = false;
+      const limit = window.innerHeight * 0.98;
+      revealables.forEach((el) => { if (!el.classList.contains("in") && el.getBoundingClientRect().top < limit) show(el); });
+    };
+    window.addEventListener("scroll", () => { if (!pending) { pending = true; requestAnimationFrame(sweep); } }, { passive: true });
+    window.addEventListener("load", sweep);
+    setTimeout(sweep, 400);
   } else {
-    revealables.forEach((el) => el.classList.add("in"));
+    revealables.forEach(show);
   }
 
   // ---- base switcher (DEC / HEX / BIN) for exact integers ----
@@ -180,17 +202,25 @@
     document.addEventListener("pointerleave", () => glow.classList.remove("on"));
   }
 
-  // ---- hero dot field: dots light up and get pushed around near the cursor ----
+  // ---- hero: drifting aurora + dot field (reacts to the cursor, ripples on tap) ----
   const hero = document.querySelector(".hero");
+  if (hero) {
+    const aurora = document.createElement("div");
+    aurora.className = "aurora";
+    aurora.setAttribute("aria-hidden", "true");
+    aurora.innerHTML = "<i></i><i></i><i></i>";
+    hero.prepend(aurora);
+  }
   if (hero && !reduced) {
     const cv = document.createElement("canvas");
     cv.className = "hero-field";
     cv.setAttribute("aria-hidden", "true");
-    hero.prepend(cv);
+    hero.querySelector(".aurora").after(cv);
     document.documentElement.classList.add("has-field");
     const ctx = cv.getContext("2d");
-    const GAP = 26;
-    let w = 0, h = 0, dpr = 1, mx = -9999, my = -9999, t = 0, raf = 0, visible = true;
+    const GAP = window.innerWidth < 600 ? 22 : 26;
+    let w = 0, h = 0, dpr = 1, mx = -9999, my = -9999, t = 0, raf = 0, visible = true, lastPoke = 0;
+    const ripples = [];
     const size = () => {
       const r = hero.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -198,21 +228,37 @@
       cv.width = w * dpr; cv.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
+    const poke = (x, y) => { ripples.push({ x, y, t0: t }); if (ripples.length > 4) ripples.shift(); lastPoke = t; };
     const draw = () => {
       t += 1;
+      // nobody touching it? send a ripple from a random spot every few seconds
+      if (t - lastPoke > 200) poke(w * (0.35 + Math.random() * 0.6), h * (0.15 + Math.random() * 0.6));
+      for (let i = ripples.length - 1; i >= 0; i--) if (t - ripples[i].t0 > 140) ripples.splice(i, 1);
       ctx.clearRect(0, 0, w, h);
       for (let y = GAP / 2; y < h; y += GAP) {
+        const fade = Math.min(1, (h - y) / (h * 0.45));
         for (let x = GAP / 2; x < w; x += GAP) {
           const dx = x - mx, dy = y - my, d = Math.hypot(dx, dy);
-          const near = Math.max(0, 1 - d / 160);
-          const wave = 0.5 + 0.5 * Math.sin(x * 0.012 + y * 0.018 - t * 0.025);
-          const fade = Math.min(1, (h - y) / (h * 0.5)); // fade out toward the bottom of the hero
-          const push = near * near * 10;
-          const px = x + (d ? (dx / d) * push : 0), py = y + (d ? (dy / d) * push : 0);
-          const a = (0.05 + wave * 0.06 + near * 0.75) * fade;
+          const near = Math.max(0, 1 - d / 170);
+          let ring = 0, rx = 0, ry = 0;
+          for (const rp of ripples) {
+            const age = t - rp.t0, R = age * 5.5, ddx = x - rp.x, ddy = y - rp.y, dd = Math.hypot(ddx, ddy);
+            const k = Math.max(0, 1 - Math.abs(dd - R) / 34) * (1 - age / 140);
+            if (k > 0 && dd) { ring = Math.max(ring, k); rx += (ddx / dd) * k * 7; ry += (ddy / dd) * k * 7; }
+          }
+          const wave = 0.5 + 0.5 * Math.sin(x * 0.012 + y * 0.018 - t * 0.03);
+          const push = near * near * 12;
+          const px = x + (d ? (dx / d) * push : 0) + rx, py = y + (d ? (dy / d) * push : 0) + ry;
+          const a = (0.05 + wave * 0.07 + near * 0.8 + ring * 0.7) * fade;
           if (a < 0.02) continue;
-          ctx.fillStyle = near > 0.05 ? `rgba(200,255,77,${a})` : `rgba(255,255,255,${a})`;
-          const r = 1 + near * 1.6;
+          if (near > 0.05 || ring > 0.05) {
+            // blue on the left, purple on the right, lime right under the cursor
+            const hot = Math.max(near, ring);
+            ctx.fillStyle = hot > 0.75 ? `rgba(200,255,77,${a})` : x / w < 0.5 ? `rgba(120,160,255,${a})` : `rgba(180,130,255,${a})`;
+          } else {
+            ctx.fillStyle = `rgba(200,200,255,${a})`;
+          }
+          const r = 1 + Math.max(near, ring) * 1.8;
           ctx.fillRect(px - r / 2, py - r / 2, r, r);
         }
       }
@@ -221,11 +267,21 @@
     const kick = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(draw); };
     size();
     if ("ResizeObserver" in window) new ResizeObserver(size).observe(hero);
-    hero.addEventListener("pointermove", (e) => { const r = hero.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; }, { passive: true });
+    const local = (e) => { const r = hero.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    hero.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") { [mx, my] = local(e); lastPoke = t; } }, { passive: true });
     hero.addEventListener("pointerleave", () => { mx = my = -9999; });
+    hero.addEventListener("pointerdown", (e) => poke(...local(e)), { passive: true });
     new IntersectionObserver((es) => { visible = es[0].isIntersecting; kick(); }).observe(hero);
     document.addEventListener("visibilitychange", kick);
     kick();
+  }
+
+  // ---- spinning gradient borders ----
+  document.querySelectorAll(".feature, .term, .game-tile, .tile-open").forEach((el) => el.classList.add("glow-border"));
+  if (!finePointer && "IntersectionObserver" in window) {
+    // no hover on touch screens, so game tiles light up while they're on screen
+    const tio = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("in-view", e.isIntersecting)), { threshold: 0.6 });
+    document.querySelectorAll(".game-tile").forEach((el) => tio.observe(el));
   }
 
   // ---- 3D tilt + glare on cards (mouse only) ----
