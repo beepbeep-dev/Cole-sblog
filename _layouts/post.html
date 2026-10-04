@@ -1,0 +1,11 @@
+---
+layout: default
+---
+    <article class="wrap article">
+      <a class="back" href="/posts.html">&larr; All posts</a>
+      <p class="eyebrow reveal"><span class="dot"></span>{% if page.tag %}{{ page.tag | escape }} &middot; {% endif %}{{ page.date | date: "%b %-d, %Y" }}</p>
+      <h1 class="reveal" data-delay="1">{{ page.title | escape }}</h1>
+      <div class="post-body reveal" data-delay="2">
+{{ content }}
+      </div>
+    </article>

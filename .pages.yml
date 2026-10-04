@@ -1,0 +1,39 @@
+# Pages CMS config: https://pagescms.org/docs/configuration/
+media:
+  input: assets/uploads
+  output: /assets/uploads
+  categories: [image]
+
+content:
+  - name: posts
+    label: Posts
+    type: collection
+    path: _posts
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      fields: [title, date, tag]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: tag
+        label: Tag
+        type: string
+        description: Optional. One short word, like coolguys or rockrom.
+      - name: layout
+        type: string
+        hidden: true
+        default: post
+      - name: body
+        label: Post
+        type: rich-text

@@ -1,0 +1,31 @@
+---
+layout: default
+title: Posts
+permalink: /posts.html
+description: Posts by Cole about projects, experiments and whatever else is going on.
+---
+    <header class="hero">
+      <div class="wrap">
+        <p class="eyebrow reveal"><span class="dot"></span>Posts</p>
+        <h1 data-scramble>Notes from the lab.</h1>
+        <p class="lede reveal" data-delay="1">What I'm building, breaking and thinking about.</p>
+      </div>
+    </header>
+
+    <section class="rule" style="padding-top:0">
+      <div class="wrap">
+{% if site.posts.size == 0 %}
+        <p class="muted feed-note">No posts yet. Check back soon.</p>
+{% endif %}
+{% for post in site.posts %}
+        <article class="story reveal">
+          <div class="story-meta">{% if post.tag %}<span class="cat">{{ post.tag | escape }}</span>{% endif %}{{ post.date | date: "%b %-d, %Y" }}</div>
+          <div>
+            <h3><a class="post-link" href="{{ post.url }}">{{ post.title | escape }}</a></h3>
+            <p>{{ post.excerpt | strip_html | strip_newlines | truncate: 200 }}</p>
+            <a class="src" href="{{ post.url }}">Read post &rarr;</a>
+          </div>
+        </article>
+{% endfor %}
+      </div>
+    </section>

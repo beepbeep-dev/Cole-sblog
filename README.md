@@ -1,6 +1,6 @@
 # coleiscool.com
 
-Cole's blog: a static site hosted on GitHub Pages. It has no build step; the pages are plain HTML, CSS and JavaScript.
+Cole's blog, hosted on GitHub Pages. The main pages are plain HTML, CSS and JavaScript. Posts are Markdown files in `_posts/` that GitHub Pages turns into pages with Jekyll.
 
 | File | What it is |
 | --- | --- |
@@ -10,6 +10,14 @@ Cole's blog: a static site hosted on GitHub Pages. It has no build step; the pag
 | `assets/style.css` | All styles (colors and spacing are tokens at the top) |
 | `assets/site.js` | Animations, DEC/HEX/BIN switcher, 32-bit bit toggler |
 | `assets/game.js` | Flappy Bit, the corner mini game |
+| `posts.html` | List of all posts |
+| `_posts/` | One Markdown file per post (written with Pages CMS) |
+| `_layouts/` | Page templates for posts |
+| `.pages.yml` | Pages CMS settings |
 | `CNAME` | Custom domain for GitHub Pages |
 
-To add a post, copy `numbers.html`, change the content, and add a link to it in the nav on each page.
+## Writing posts
+
+1. Go to [app.pagescms.org](https://app.pagescms.org) and sign in with GitHub.
+2. Open **Cole-sblog**, then **Posts**, then **Add an entry**.
+3. Fill in the title, date and post, then click **Save**. It shows up on the site in a minute or two.

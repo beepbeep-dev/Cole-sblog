@@ -1,0 +1,14 @@
+title: Cole
+url: https://coleiscool.com
+markdown: kramdown
+kramdown:
+  input: GFM
+permalink: /posts/:year/:month/:day/:title/
+exclude:
+  - README.md
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
