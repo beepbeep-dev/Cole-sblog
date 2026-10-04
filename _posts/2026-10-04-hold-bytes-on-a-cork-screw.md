@@ -43,6 +43,6 @@ void loop() {
 
 ```
 
-Run the code and open the serial monitor on 9600 baud and you should see it now remember one cork can only store 8 bytes so like up to 255 and one letter but it’s still cool 
+Run the code and open the serial monitor on 9600 baud and you should see it now remember one cork can only store 8  bits so like up to 255 and one letter but it’s still cool 
 
 Anyway goodbye I hope this works out for you and have a good time.
