@@ -1,34 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Cole — coleiscool.com</title>
-  <meta name="description" content="Cole's blog. Code, experiments, and the numbers every programmer should know.">
-  <meta name="theme-color" content="#0A0A0A">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0A0A'/%3E%3Crect x='9' y='8' width='14' height='16' rx='3' fill='%23C8FF4D'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-  <a class="skip" href="#main">Skip to content</a>
-
-  <nav class="nav" aria-label="Main">
-    <div class="wrap">
-      <a class="logo" href="./">cole<span class="caret" aria-hidden="true"></span></a>
-      <ul>
-        <li><a class="link" href="./" aria-current="page">About</a></li>
-        <li><a class="link" href="numbers.html">Numbers</a></li>
-        <li><a class="link" href="news.html">News</a></li>
-        <li><a class="link" href="posts.html">Posts</a></li>
-        <li><a class="link" href="media.html">Media</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <main id="main">
+---
+layout: default
+description: "Cole's blog. Code, experiments, and the numbers every programmer should know."
+home: true
+---
     <header class="hero">
       <div class="wrap">
         <p class="eyebrow reveal"><span class="dot"></span>coleiscool.com</p>
@@ -36,6 +10,10 @@
         <p class="lede reveal" data-delay="1">I run <strong>gamingrentals.store</strong> and make weird stuff that probably shouldn't work.</p>
       </div>
     </header>
+
+    <div class="marquee" aria-label="Things I'm into: Coolguys, slime mold + ESP32, rock ROM, CD: 8 bits on a cork, Bambu A1 Mini, SteamOS rig, salvaged MacBooks, gamingrentals.store, bug bounties, lucid dreaming, Cooper the dog">
+      <div class="marquee-track" aria-hidden="true"><span>Coolguys</span><i aria-hidden="true">&#9670;</i><span>slime mold + ESP32</span><i aria-hidden="true">&#9670;</i><span>rock ROM</span><i aria-hidden="true">&#9670;</i><span>CD: 8 bits on a cork</span><i aria-hidden="true">&#9670;</i><span>Bambu A1 Mini</span><i aria-hidden="true">&#9670;</i><span>SteamOS rig</span><i aria-hidden="true">&#9670;</i><span>salvaged MacBooks</span><i aria-hidden="true">&#9670;</i><span>gamingrentals.store</span><i aria-hidden="true">&#9670;</i><span>bug bounties</span><i aria-hidden="true">&#9670;</i><span>lucid dreaming</span><i aria-hidden="true">&#9670;</i><span>Cooper the dog</span><i aria-hidden="true">&#9670;</i><span>Coolguys</span><i aria-hidden="true">&#9670;</i><span>slime mold + ESP32</span><i aria-hidden="true">&#9670;</i><span>rock ROM</span><i aria-hidden="true">&#9670;</i><span>CD: 8 bits on a cork</span><i aria-hidden="true">&#9670;</i><span>Bambu A1 Mini</span><i aria-hidden="true">&#9670;</i><span>SteamOS rig</span><i aria-hidden="true">&#9670;</i><span>salvaged MacBooks</span><i aria-hidden="true">&#9670;</i><span>gamingrentals.store</span><i aria-hidden="true">&#9670;</i><span>bug bounties</span><i aria-hidden="true">&#9670;</i><span>lucid dreaming</span><i aria-hidden="true">&#9670;</i><span>Cooper the dog</span><i aria-hidden="true">&#9670;</i></div>
+    </div>
 
     <section class="rule">
       <div class="wrap split">
@@ -64,7 +42,7 @@
     <section class="rule">
       <div class="wrap">
         <p class="eyebrow reveal">Read next</p>
-        <a class="feature reveal" href="numbers.html">
+        <a class="feature reveal" href="/numbers.html">
           <div>
             <p class="big" data-scramble-on-view>2,147,483,647</p>
             <h3>Important numbers in coding</h3>
@@ -75,21 +53,23 @@
           </span>
         </a>
         <div class="soon reveal" data-delay="1">
-          <a class="chip chip-link" href="news.html">News: what happened in tech this week &rarr;</a>
-          <a class="chip chip-link" href="posts.html">All posts &rarr;</a>
+          <a class="chip chip-link" href="/news.html">News: what happened in tech this week &rarr;</a>
+          <a class="chip chip-link" href="/posts.html">All posts &rarr;</a>
         </div>
       </div>
     </section>
-  </main>
 
-  <footer>
-    <div class="wrap">
-      <span>&copy; <span data-year>2026</span> Cole</span>
-      <a href="https://github.com/beepbeep-dev">github.com/beepbeep-dev</a>
-    </div>
-  </footer>
-
-  <script src="assets/site.js"></script>
-  <script src="assets/game.js"></script>
-</body>
-</html>
+    <section class="rule">
+      <div class="wrap">
+        <div class="group-head reveal">
+          <h2>Take a break.</h2>
+          <a class="eyebrow chip-inline" href="/games.html" style="margin:0">Open the arcade &rarr;</a>
+        </div>
+        <div class="game-tiles">
+          <a class="game-tile reveal" href="/games.html#snake"><span class="gt-art gt-snake" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></span><span class="gt-name">byte_snake</span><span class="gt-sub">eat bits, don't bite yourself</span></a>
+          <a class="game-tile reveal" data-delay="1" href="/games.html#g2048"><span class="gt-art gt-2048" aria-hidden="true"><i>2</i><i>4</i><i>8</i><i>16</i></span><span class="gt-name">2048</span><span class="gt-sub">merge powers of two</span></a>
+          <a class="game-tile reveal" data-delay="2" href="/games.html#breakout"><span class="gt-art gt-break" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><b></b></span><span class="gt-name">bit_breaker</span><span class="gt-sub">smash a wall of bytes</span></a>
+          <a class="game-tile reveal" data-delay="3" href="/games.html#flappy"><span class="gt-art gt-flappy" aria-hidden="true"><i></i><i></i><b>1</b></span><span class="gt-name">flappy_bit</span><span class="gt-sub">the classic, now full size</span></a>
+        </div>
+      </div>
+    </section>

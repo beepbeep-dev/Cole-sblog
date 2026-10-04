@@ -1,0 +1,29 @@
+---
+layout: default
+title: Arcade
+permalink: /games.html
+no_widget: true
+description: "Four tiny games built from bits. Flappy Bit, Byte Snake, 2048 and Bit Breaker, right in your browser."
+---
+    <header class="hero hero-tight">
+      <div class="wrap">
+        <p class="eyebrow reveal"><span class="dot"></span>Arcade &middot; 4 games</p>
+        <h1 data-scramble>Insert coin.</h1>
+        <p class="lede reveal" data-delay="1">Four tiny games made out of bits. Your best scores stay saved <strong>in this browser</strong>.</p>
+      </div>
+    </header>
+
+    <section class="rule arcade-section">
+      <div class="wrap arcade-grid">
+        <div class="reveal" id="snake" data-game="snake"></div>
+        <div class="reveal" data-delay="1" id="g2048" data-game="g2048"></div>
+        <div class="reveal" id="breakout" data-game="breakout"></div>
+        <div class="reveal" data-delay="1" id="flappy" data-game="flappy"></div>
+      </div>
+    </section>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("[data-game]").forEach(function (el) { window.ColeArcade.mount(el); });
+      });
+    </script>
