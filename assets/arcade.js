@@ -475,7 +475,7 @@ window.ColeArcade = (() => {
   const KEYMAP = {
     ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
     KeyW: "up", KeyS: "down", KeyA: "left", KeyD: "right",
-    Space: "primary", Enter: "primary",
+    Space: "primary", Enter: "primary", KeyF: "flag",
   };
 
   function attach(canvas, game, opts = {}) {
@@ -516,7 +516,7 @@ window.ColeArcade = (() => {
       canvas.focus({ preventScroll: true, focusVisible: false });
       start = { x: e.clientX, y: e.clientY };
       try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-      if (game.pointer) game.pointer("down", ...logical(e));
+      if (game.pointer) game.pointer("down", ...logical(e), e.button);
       if (game.tapOnDown) { game.key("primary", true); game.key("primary", false); }
     });
     canvas.addEventListener("pointermove", (e) => {
@@ -524,6 +524,7 @@ window.ColeArcade = (() => {
     });
     const end = (e) => {
       if (!start) return;
+      if (game.pointer) game.pointer("up", ...logical(e));
       const dx = e.clientX - start.x, dy = e.clientY - start.y;
       start = null;
       if (!game.swipe) return;
@@ -534,6 +535,7 @@ window.ColeArcade = (() => {
     };
     canvas.addEventListener("pointerup", end);
     canvas.addEventListener("pointercancel", () => (start = null));
+    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
     // loop: runs only while visible on screen (and while opts.active() says so)
     let raf = 0, last = 0, onScreen = true;
@@ -557,12 +559,309 @@ window.ColeArcade = (() => {
     return { sync, fit, game };
   }
 
-  const games = { flappy, snake, g2048, breakout };
+  // =====================================================================
+  // BYTE STACK — falling blocks; clear full rows
+  // =====================================================================
+  function stack(ui) {
+    const COLS = 10, ROWS = 20, S = 14, BW = COLS * S, W = BW + 96, H = ROWS * S;
+    const best = store("cole.stack.best");
+    const SHAPES = {
+      I: [[0, 1], [1, 1], [2, 1], [3, 1]], O: [[1, 0], [2, 0], [1, 1], [2, 1]], T: [[1, 0], [0, 1], [1, 1], [2, 1]],
+      S: [[1, 0], [2, 0], [0, 1], [1, 1]], Z: [[0, 0], [1, 0], [1, 1], [2, 1]], J: [[0, 0], [0, 1], [1, 1], [2, 1]], L: [[2, 0], [0, 1], [1, 1], [2, 1]],
+    };
+    const COLORS = { I: "#5B8CFF", O: "#C8FF4D", T: "#A66BFF", S: "#8FB0FF", Z: "#B98AFF", J: "#3A58B8", L: "#9BE36A" };
+    let grid, piece, next, state, score, lines, acc, t, flash, bag;
+
+    const level = () => Math.floor(lines / 10) + 1;
+    const interval = () => Math.max(90, 650 - (level() - 1) * 60);
+    function draw7() {
+      if (!bag || !bag.length) { bag = Object.keys(SHAPES); for (let i = bag.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [bag[i], bag[j]] = [bag[j], bag[i]]; } }
+      return bag.pop();
+    }
+    const make = (k) => ({ k, cells: SHAPES[k].map((c) => c.slice()), x: 3, y: k === "I" ? -1 : 0 });
+    const fits = (cells, x, y) => cells.every(([cx, cy]) => {
+      const gx = cx + x, gy = cy + y;
+      return gx >= 0 && gx < COLS && gy < ROWS && (gy < 0 || !grid[gy][gx]);
+    });
+    function reset() {
+      grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      bag = null; next = draw7(); piece = make(draw7());
+      state = "ready"; score = 0; lines = 0; acc = 0; t = 0; flash = 0;
+      ui.score(0);
+    }
+    function spawn() {
+      piece = make(next); next = draw7();
+      if (!fits(piece.cells, piece.x, piece.y)) {
+        state = "over"; flash = 24;
+        if (score > best.get()) { best.set(score); ui.best(score); }
+      }
+    }
+    function lock() {
+      for (const [cx, cy] of piece.cells) { const gy = cy + piece.y; if (gy < 0) { state = "over"; flash = 24; break; } grid[gy][cx + piece.x] = COLORS[piece.k]; }
+      if (state === "over") { if (score > best.get()) { best.set(score); ui.best(score); } return; }
+      let cleared = 0;
+      for (let r = ROWS - 1; r >= 0; r--) {
+        if (grid[r].every(Boolean)) { grid.splice(r, 1); grid.unshift(Array(COLS).fill(null)); cleared++; r++; }
+      }
+      if (cleared) { score += [0, 40, 100, 300, 1200][cleared] * level(); lines += cleared; ui.score(score); if (score > best.get()) { best.set(score); ui.best(score); } }
+      spawn();
+    }
+    function move(dx, dy) {
+      if (fits(piece.cells, piece.x + dx, piece.y + dy)) { piece.x += dx; piece.y += dy; return true; }
+      return false;
+    }
+    function rotate() {
+      if (piece.k === "O") return;
+      const r = piece.cells.map(([x, y]) => [2 - y, x]);
+      for (const kick of [0, -1, 1, -2, 2]) if (fits(r, piece.x + kick, piece.y)) { piece.cells = r; piece.x += kick; return; }
+    }
+    function hardDrop() { while (move(0, 1)) score += 1; ui.score(score); lock(); acc = 0; }
+    function update(k) {
+      t += k; if (flash > 0) flash -= k;
+      if (state !== "play") return;
+      acc += k * 16.67;
+      while (acc >= interval() && state === "play") { acc -= interval(); if (!move(0, 1)) lock(); }
+    }
+    function cell(ctx, x, y, color, a) {
+      ctx.globalAlpha = a == null ? 1 : a;
+      ctx.fillStyle = color; rr(ctx, x * S + 1, y * S + 1, S - 2, S - 2, 3); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    function draw(ctx) {
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(140,150,255,0.05)";
+      for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS; y++) ctx.fillRect(x * S + S / 2 - 1, y * S + S / 2 - 1, 2, 2);
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (grid[y][x]) cell(ctx, x, y, grid[y][x]);
+      if (state !== "over") {
+        // ghost
+        let gy = piece.y; while (fits(piece.cells, piece.x, gy + 1)) gy++;
+        for (const [cx, cy] of piece.cells) if (cy + gy >= 0) cell(ctx, cx + piece.x, cy + gy, COLORS[piece.k], 0.18);
+        for (const [cx, cy] of piece.cells) if (cy + piece.y >= 0) cell(ctx, cx + piece.x, cy + piece.y, COLORS[piece.k]);
+      }
+      ctx.fillStyle = C.line; ctx.fillRect(BW, 0, 1, H);
+      const px = BW + 48;
+      text(ctx, "NEXT", px, 18, { size: 9, color: C.muted });
+      ctx.save(); ctx.translate(BW + 20, 30);
+      for (const [cx, cy] of SHAPES[next]) { ctx.fillStyle = COLORS[next]; rr(ctx, cx * 13, cy * 13, 12, 12, 3); ctx.fill(); }
+      ctx.restore();
+      text(ctx, "LINES", px, 90, { size: 9, color: C.muted }); text(ctx, String(lines), px, 106, { size: 16, weight: 600 });
+      text(ctx, "LEVEL", px, 136, { size: 9, color: C.muted }); text(ctx, String(level()), px, 152, { size: 16, weight: 600, color: C.purple });
+      if (state === "ready") banner(ctx, BW, H, "byte_stack", "tap / any key to start");
+      if (state === "over") banner(ctx, BW, H, "stack overflow.", flash > 0 ? "" : "tap / space to retry", C.danger);
+    }
+    function key(action, down) {
+      if (!down) return;
+      if (state === "over") { if (flash <= 0 && action === "primary") reset(); return; }
+      if (state === "ready") { state = "play"; return; }
+      if (action === "left") move(-1, 0);
+      else if (action === "right") move(1, 0);
+      else if (action === "up" || action === "primary") rotate();
+      else if (action === "down") hardDrop();
+    }
+    ui.best(best.get());
+    reset();
+    return { W, H, update, draw, key, reset, swipe: true };
+  }
+
+  // =====================================================================
+  // BIT SWEEPER — minesweeper; the mines are bugs
+  // =====================================================================
+  function sweeper(ui) {
+    const N = 9, MINES = 10, S = 30, TOP = 30, W = N * S, H = N * S + TOP;
+    const best = store("cole.sweeper.best"); // fastest win, in seconds (0 = none yet)
+    let mines, open, flags, counts, state, started, t, cur, down, elapsed;
+
+    function reset() {
+      mines = null; open = new Set(); flags = new Set(); counts = [];
+      state = "play"; started = false; t = 0; elapsed = 0; cur = [4, 4]; down = null;
+      ui.score(0);
+    }
+    const id = (x, y) => y * N + x;
+    const around = (x, y) => {
+      const out = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if ((dx || dy) && nx >= 0 && ny >= 0 && nx < N && ny < N) out.push([nx, ny]);
+      }
+      return out;
+    };
+    function plant(sx, sy) {
+      mines = new Set();
+      const safe = new Set([id(sx, sy), ...around(sx, sy).map(([x, y]) => id(x, y))]);
+      while (mines.size < MINES) { const c = (Math.random() * N * N) | 0; if (!safe.has(c)) mines.add(c); }
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) counts[id(x, y)] = around(x, y).filter(([a, b]) => mines.has(id(a, b))).length;
+      started = true;
+    }
+    function reveal(x, y) {
+      if (state !== "play" || flags.has(id(x, y)) || open.has(id(x, y))) return;
+      if (!mines) plant(x, y);
+      if (mines.has(id(x, y))) { state = "lost"; open.add(id(x, y)); return; }
+      const stack = [[x, y]];
+      while (stack.length) {
+        const [cx, cy] = stack.pop(), c = id(cx, cy);
+        if (open.has(c) || flags.has(c)) continue;
+        open.add(c);
+        if (counts[c] === 0) stack.push(...around(cx, cy));
+      }
+      if (open.size === N * N - MINES) {
+        state = "won";
+        const secs = Math.max(1, Math.round(elapsed));
+        if (!best.get() || secs < best.get()) { best.set(secs); ui.best(secs + "s"); }
+      }
+    }
+    function flag(x, y) {
+      if (state !== "play" || open.has(id(x, y))) return;
+      const c = id(x, y);
+      flags.has(c) ? flags.delete(c) : flags.add(c);
+    }
+    function update(k) {
+      t += k;
+      if (state === "play" && started) { elapsed += k / 60; ui.score(Math.floor(elapsed) + "s"); }
+    }
+    const NUMC = ["", "#8FB0FF", "#9BE36A", "#B98AFF", "#5B8CFF", "#FF6B8A", "#C8FF4D", "#F2F2EE", "#9B9B95"];
+    function draw(ctx) {
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+      text(ctx, "bugs " + (MINES - flags.size), 8, TOP / 2, { size: 11, color: C.muted, align: "left" });
+      text(ctx, state === "won" ? "all clear" : state === "lost" ? "segfault" : "hold / right-click = flag", W - 8, TOP / 2, { size: 10, color: state === "won" ? C.accent : state === "lost" ? C.danger : C.muted, align: "right" });
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const c = id(x, y), px = x * S, py = TOP + y * S;
+        const isOpen = open.has(c), isMine = mines && mines.has(c);
+        const showMine = isMine && state === "lost";
+        ctx.fillStyle = isOpen ? "#141420" : "#1E2235";
+        rr(ctx, px + 1.5, py + 1.5, S - 3, S - 3, 5); ctx.fill();
+        if (showMine) {
+          ctx.fillStyle = open.has(c) ? C.danger : "rgba(255,107,138,0.55)";
+          rr(ctx, px + 7, py + 7, S - 14, S - 14, 4); ctx.fill();
+          text(ctx, "x", px + S / 2, py + S / 2 + 0.5, { size: 11, weight: 700, color: "#0A0A0A" });
+        } else if (isOpen && counts[c]) {
+          text(ctx, String(counts[c]), px + S / 2, py + S / 2 + 1, { size: 14, weight: 700, color: NUMC[counts[c]] });
+        } else if (flags.has(c)) {
+          glowRect(ctx, px + 9, py + 8, S - 18, S - 16, 3, C.purple, 10);
+          text(ctx, "1", px + S / 2, py + S / 2 + 0.5, { size: 10, weight: 700, color: "#0A0A0A" });
+        }
+        if (cur[0] === x && cur[1] === y && state === "play") { ctx.strokeStyle = "rgba(200,255,77,0.6)"; ctx.lineWidth = 1.5; rr(ctx, px + 1.5, py + 1.5, S - 3, S - 3, 5); ctx.stroke(); }
+      }
+      if (state === "won") banner(ctx, W, H, "no bugs left.", Math.round(elapsed) + "s · tap to play again");
+      if (state === "lost") banner(ctx, W, H, "you hit a bug.", "tap to try again", C.danger);
+    }
+    function key(action, isDown) {
+      if (!isDown) return;
+      if (state !== "play") { if (action === "primary") reset(); return; }
+      const d = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[action];
+      if (d) { cur = [Math.max(0, Math.min(N - 1, cur[0] + d[0])), Math.max(0, Math.min(N - 1, cur[1] + d[1]))]; return; }
+      if (action === "primary") reveal(cur[0], cur[1]);
+      if (action === "flag") flag(cur[0], cur[1]);
+    }
+    function pointer(type, x, y, button) {
+      const gx = Math.floor(x / S), gy = Math.floor((y - TOP) / S);
+      const inside = gx >= 0 && gy >= 0 && gx < N && gy < N;
+      if (type === "down") {
+        if (state !== "play") { reset(); down = null; return; }
+        down = inside ? { gx, gy, at: performance.now(), right: button === 2 } : null;
+        if (inside) cur = [gx, gy];
+      } else if (type === "up" && down) {
+        const held = performance.now() - down.at;
+        if (down.right || held > 380) flag(down.gx, down.gy); else reveal(down.gx, down.gy);
+        down = null;
+      }
+    }
+    const b = best.get(); ui.best(b ? b + "s" : "–");
+    reset();
+    return { W, H, update, draw, key, pointer, reset };
+  }
+
+  // =====================================================================
+  // PING — pong against the computer, first to 7
+  // =====================================================================
+  function pong(ui) {
+    const W = 360, H = 240, PW = 8, PH = 46, R = 5, WIN = 7;
+    const wins = store("cole.pong.wins");
+    let me, cpu, ball, ms, cs, state, held, target, flash, t, serveDir;
+
+    function reset() {
+      me = H / 2; cpu = H / 2; ms = 0; cs = 0; state = "ready"; held = {}; target = null; flash = 0; t = 0; serveDir = 1;
+      center(); ui.score("0–0");
+    }
+    function center() { ball = { x: W / 2, y: H / 2, vx: 0, vy: 0 }; }
+    function serve() {
+      const a = (Math.random() * 0.8 - 0.4);
+      ball.vx = 3.2 * serveDir * Math.cos(a); ball.vy = 3.2 * Math.sin(a);
+      state = "play";
+    }
+    function point(mine) {
+      mine ? ms++ : cs++;
+      ui.score(ms + "–" + cs);
+      serveDir = mine ? -1 : 1;
+      center();
+      if (ms >= WIN || cs >= WIN) {
+        state = ms > cs ? "won" : "lost"; flash = 30;
+        if (ms > cs) { wins.set(wins.get() + 1); ui.best(wins.get() + " wins"); }
+      } else { state = "between"; flash = 40; }
+    }
+    function hit(py, dir) {
+      const off = Math.max(-1, Math.min(1, (ball.y - py) / (PH / 2)));
+      const sp = Math.min(7.5, Math.hypot(ball.vx, ball.vy) * 1.06);
+      ball.vx = dir * sp * Math.cos(off * 0.9); ball.vy = sp * Math.sin(off * 0.9);
+    }
+    function update(k) {
+      t += k; if (flash > 0) flash -= k;
+      if (held.up) me -= 5 * k;
+      if (held.down) me += 5 * k;
+      if (target != null) me += (target - me) * Math.min(1, 0.3 * k);
+      me = Math.max(PH / 2, Math.min(H - PH / 2, me));
+      // computer: tracks the ball, but not perfectly
+      const aim = ball.vx > 0 ? ball.y : H / 2;
+      cpu += Math.max(-3.4, Math.min(3.4, (aim - cpu) * 0.12)) * k;
+      cpu = Math.max(PH / 2, Math.min(H - PH / 2, cpu));
+      if (state === "between" && flash <= 0) serve();
+      if (state !== "play") return;
+      const steps = Math.ceil(Math.hypot(ball.vx, ball.vy) * k / 3);
+      for (let i = 0; i < steps && state === "play"; i++) {
+        ball.x += ball.vx * k / steps; ball.y += ball.vy * k / steps;
+        if (ball.y < R) { ball.y = R; ball.vy = Math.abs(ball.vy); }
+        if (ball.y > H - R) { ball.y = H - R; ball.vy = -Math.abs(ball.vy); }
+        if (ball.vx < 0 && ball.x - R <= 16 + PW && ball.x > 10 && Math.abs(ball.y - me) <= PH / 2 + R) { ball.x = 16 + PW + R; hit(me, 1); }
+        if (ball.vx > 0 && ball.x + R >= W - 16 - PW && ball.x < W - 10 && Math.abs(ball.y - cpu) <= PH / 2 + R) { ball.x = W - 16 - PW - R; hit(cpu, -1); }
+        if (ball.x < -10) point(false);
+        else if (ball.x > W + 10) point(true);
+      }
+    }
+    function draw(ctx) {
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(166,107,255,0.25)";
+      for (let y = 6; y < H; y += 16) ctx.fillRect(W / 2 - 1, y, 2, 8);
+      text(ctx, String(ms), W / 2 - 40, 26, { size: 22, weight: 600, color: C.blue });
+      text(ctx, String(cs), W / 2 + 40, 26, { size: 22, weight: 600, color: C.purple });
+      glowRect(ctx, 16, me - PH / 2, PW, PH, 4, C.blue, 12);
+      glowRect(ctx, W - 16 - PW, cpu - PH / 2, PW, PH, 4, C.purple, 12);
+      if (state !== "won" && state !== "lost") glowRect(ctx, ball.x - R, ball.y - R, R * 2, R * 2, R, C.accent, 14);
+      text(ctx, "you", 20, H - 10, { size: 9, color: C.muted, align: "left" });
+      text(ctx, "cpu", W - 20, H - 10, { size: 9, color: C.muted, align: "right" });
+      if (state === "ready") banner(ctx, W, H, "ping", "first to 7 · tap / space to serve");
+      if (state === "won") banner(ctx, W, H, "you win " + ms + "–" + cs + ".", flash > 0 ? "" : "tap / space to play again");
+      if (state === "lost") banner(ctx, W, H, "cpu wins " + cs + "–" + ms + ".", flash > 0 ? "" : "tap / space for a rematch", C.danger);
+    }
+    function key(action, down) {
+      if (action === "up" || action === "down") { held[action] = down; target = null; return; }
+      if (!down || action !== "primary") return;
+      if (state === "ready") serve();
+      else if ((state === "won" || state === "lost") && flash <= 0) { reset(); serve(); }
+    }
+    function pointer(type, x, y) { if (type === "move" || type === "down") target = y; }
+    ui.best(wins.get() + " wins");
+    reset();
+    return { W, H, update, draw, key, pointer, reset, tapOnDown: true, trackHover: true };
+  }
+
+  const games = { flappy, snake, g2048, breakout, stack, sweeper, pong };
   const INFO = {
     flappy: { name: "flappy_bit", hint: "Click, tap or space to flap." },
     snake: { name: "byte_snake", hint: "Arrows, WASD or swipe." },
     g2048: { name: "2048", hint: "Arrows, WASD or swipe. Every tile is a power of two." },
     breakout: { name: "bit_breaker", hint: "Move the mouse, drag, or use arrows. Tap / space to launch." },
+    stack: { name: "byte_stack", hint: "Left/right to move, up / tap to rotate, down to drop. Swipe works too." },
+    sweeper: { name: "bit_sweeper", hint: "Tap to open a cell. Hold or right-click to flag a bug. Keys: arrows, space, F." },
+    pong: { name: "ping", hint: "Move the mouse, drag, or use up/down. First to 7 wins." },
   };
 
   // builds a full card: header (name, score, best, restart) + canvas + hint
